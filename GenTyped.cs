@@ -91,7 +91,9 @@ public abstract class GenTyped : GenBase
 			case TypeCode.Int16:
 			case TypeCode.UInt16:
 			case TypeCode.Int32:
+			case TypeCode.UInt32:
 			case TypeCode.Int64:
+			case TypeCode.UInt64:
 				return true;
 			default:
 				return false;
@@ -102,7 +104,9 @@ public abstract class GenTyped : GenBase
 			case TypeCode.Int16:
 			case TypeCode.UInt16:
 			case TypeCode.Int32:
+			case TypeCode.UInt32:
 			case TypeCode.Int64:
+			case TypeCode.UInt64:
 				return true;
 			default:
 				return false;
@@ -111,7 +115,9 @@ public abstract class GenTyped : GenBase
 			switch (right) {
 			case TypeCode.UInt16:
 			case TypeCode.Int32:
+			case TypeCode.UInt32:
 			case TypeCode.Int64:
+			case TypeCode.UInt64:
 				return true;
 			default:
 				return false;
@@ -120,12 +126,32 @@ public abstract class GenTyped : GenBase
 			switch (right) {
 			case TypeCode.Int16:
 			case TypeCode.Int32:
+			case TypeCode.UInt32:
 			case TypeCode.Int64:
+			case TypeCode.UInt64:
 				return true;
 			default:
 				return false;
 			}
 		case TypeCode.Int32:
+			switch (right) {
+			case TypeCode.UInt32:
+			case TypeCode.Int64:
+			case TypeCode.UInt64:
+				return true;
+			default:
+				return false;
+			}
+		case TypeCode.UInt32:
+			switch (right) {
+			case TypeCode.Int32:
+			case TypeCode.Int64:
+			case TypeCode.UInt64:
+				return true;
+			default:
+				return false;
+			}
+		case TypeCode.Int64:
 			return right == TypeCode.Int64;
 		default:
 			return false;
@@ -208,6 +234,7 @@ public abstract class GenTyped : GenBase
 
 	protected override void WriteCoercedInternal(CiType type, CiExpr expr, CiPriority parent)
 	{
+		// Todo uint should be 32 bit
 		if (type is CiIntegerType && type != CiSystem.LongType && expr.Type == CiSystem.LongType)
 			WriteStaticCast(type, expr);
 		else if (type == CiSystem.FloatType && expr.Type == CiSystem.DoubleType) {

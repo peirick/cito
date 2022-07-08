@@ -235,6 +235,9 @@ public class GenSwift : GenPySwift
 			case TypeCode.Int64:
 				Write("Int64");
 				break;
+			case TypeCode.UInt64:
+				Write("UInt64");
+				break;
 			default:
 				throw new NotImplementedException(integer.ToString());
 			}

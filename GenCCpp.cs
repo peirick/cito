@@ -65,9 +65,17 @@ public abstract class GenCCpp : GenTyped
 		case TypeCode.Int32:
 			Write("int");
 			break;
+		case TypeCode.UInt32:
+			IncludeStdInt();
+			Write("uint32_t");
+			break;
 		case TypeCode.Int64:
 			IncludeStdInt();
 			Write("int64_t");
+			break;
+		case TypeCode.UInt64:
+			IncludeStdInt();
+			Write("uint64_t");
 			break;
 		case TypeCode.Single:
 			Write("float");

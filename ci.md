@@ -98,14 +98,21 @@ There are aliases for the commonly used ranges:
 * `byte` is `0 .. 255`
 * `short` is `-32768 .. 32767`
 * `ushort` is `0 .. 65535`
-* `uint` is `0 .. 2147483647`.
+* `uint` is `0 .. 4294967295`.
 
+Note that Java does not natively support `uint`, `ulong` and unsigned `byte`,
+cito is accomplishing unsigned arithmetic through using the
+Java Unsigned Integer API ( Integer.compareUnsigned, Integer.divideUnsigned,
+Integer.remainderUnsigned, Integer.parseUnsignedInt,Integer.toUnsignedString).
+When mixing signed with unsigned, cito uses the unsigned operator. 
+<!-- 
 Note that `uint` is _not_ 32-bit unsigned integer, but a 31-bit one.
 As such, it doesn't provide extended range over `int`.
 It serves as a documentation that a negative number is not allowed.
 `byte` corresponds to `byte` in Java, even though the Java type is _signed_.
 This is accomplished by `cito` injecting `& 0xff` in every retrieval
-of a `byte` value.
+of a `byte` value. 
+-->
 
 Integer literals may be written as:
 

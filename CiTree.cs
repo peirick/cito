@@ -733,7 +733,13 @@ public class CiBinaryExpr : CiExpr
 
 	public static CiType PromoteIntegerTypes(CiType left, CiType right)
 	{
-		return left == CiSystem.LongType || right == CiSystem.LongType ? CiSystem.LongType : CiSystem.IntType;
+		return left == CiSystem.ULongType || right == CiSystem.ULongType
+			? CiSystem.ULongType
+			: left == CiSystem.LongType || right == CiSystem.LongType
+			? CiSystem.LongType
+			: left == CiSystem.UIntType || right == CiSystem.UIntType
+			? CiSystem.UIntType
+			:CiSystem.IntType;
 	}
 
 	public static CiType PromoteFloatingTypes(CiType left, CiType right)
@@ -1579,8 +1585,9 @@ public class CiSystem : CiScope
 	public static readonly CiType VoidType = new CiType { Name = "void" };
 	public static readonly CiType NullType = new CiType { Name = "null" };
 	public static readonly CiIntegerType IntType = new CiIntegerType { Name = "int" };
-	public static readonly CiRangeType UIntType = new CiRangeType(0, int.MaxValue) { Name = "uint" };
+	public static readonly CiIntegerType UIntType = new CiIntegerType { Name = "uint" };
 	public static readonly CiIntegerType LongType = new CiIntegerType { Name = "long" };
+	public static readonly CiIntegerType ULongType = new CiIntegerType { Name = "ulong" };
 	public static readonly CiRangeType ByteType = new CiRangeType(0, 0xff) { Name = "byte" };
 	public static readonly CiRangeType ShortType = new CiRangeType(-0x8000, 0x7fff) { Name = "short" };
 	public static readonly CiRangeType UShortType = new CiRangeType(0, 0xffff) { Name = "ushort" };
@@ -1702,6 +1709,7 @@ public class CiSystem : CiScope
 		Add(IntType);
 		Add(UIntType);
 		Add(LongType);
+		//Add(ULongType);
 		Add(ByteType);
 		Add(ShortType);
 		Add(UShortType);

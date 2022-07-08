@@ -56,8 +56,14 @@ public class GenCl : GenC
 		case TypeCode.Int32:
 			Write("int");
 			break;
+		case TypeCode.UInt32:
+			Write("uint");
+			break;
 		case TypeCode.Int64:
 			Write("long");
+			break;
+		case TypeCode.UInt64:
+			Write("ulong");
 			break;
 		default:
 			throw new NotImplementedException(typeCode.ToString());

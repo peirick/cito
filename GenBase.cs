@@ -431,8 +431,12 @@ public abstract class GenBase : CiVisitor
 
 	protected virtual TypeCode GetIntegerTypeCode(CiIntegerType integer, bool promote)
 	{
+		if (integer == CiSystem.ULongType)
+			return TypeCode.UInt64;
 		if (integer == CiSystem.LongType)
 			return TypeCode.Int64;
+		if ( integer == CiSystem.UIntType)
+			return TypeCode.UInt32;
 		if (promote || integer == CiSystem.IntType)
 			return TypeCode.Int32;
 		CiRangeType range = (CiRangeType) integer;
