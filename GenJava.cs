@@ -483,7 +483,7 @@ namespace Foxoft.Ci
 				base.WriteAnd(expr, parent);
 		}
 
-		private void WriteDiv(CiBinaryExpr expr)
+		private void WriteUnsignedDiv(CiBinaryExpr expr)
 		{
 			if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64 || GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
 				Write("Long.divideUnsigned(");
@@ -501,7 +501,7 @@ namespace Foxoft.Ci
 			}
 		}
 
-		private void WriteMod(CiBinaryExpr expr)
+		private void WriteUnsignedMod(CiBinaryExpr expr)
 		{
 			if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64 || GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
 				Write("Long.remainderUnsigned(");
@@ -544,7 +544,7 @@ namespace Foxoft.Ci
 			return expr;
 		}
 
-		private void WriteShiftRight(CiBinaryExpr expr, CiPriority parent)
+		private void WriteUnsignedShiftRight(CiBinaryExpr expr, CiPriority parent)
 		{
 			if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32
 			 || GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64) {
@@ -848,13 +848,13 @@ namespace Foxoft.Ci
 				leftTypeCode == TypeCode.UInt64) {
 				switch (expr.Op) {
 				case CiToken.Slash:
-					WriteDiv(expr);
+					WriteUnsignedDiv(expr);
 					return expr;
 				case CiToken.Mod:
-					WriteMod(expr);
+					WriteUnsignedMod(expr);
 					return expr;
 				case CiToken.ShiftRight:
-					WriteShiftRight(expr, parent);
+					WriteUnsignedShiftRight(expr, parent);
 					return expr;
 				case CiToken.Less:
 					return WriteUnsignedCompare(expr, parent > CiPriority.Rel, " < ");
@@ -872,11 +872,11 @@ namespace Foxoft.Ci
 					expr.Left.Accept(this, CiPriority.Assign);
 					Write(" = ");
 					if (expr.Op == CiToken.ModAssign)
-						WriteMod(expr);
+						WriteUnsignedMod(expr);
 					else if (expr.Op == CiToken.DivAssign)
-						WriteDiv(expr);
+						WriteUnsignedDiv(expr);
 					else if (expr.Op == CiToken.ShiftRightAssign)
-						WriteShiftRight(expr, parent);
+						WriteUnsignedShiftRight(expr, parent);
 
 					if (parent > CiPriority.Assign)
 						Write(')');
