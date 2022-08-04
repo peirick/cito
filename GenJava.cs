@@ -525,14 +525,14 @@ namespace Foxoft.Ci
 				Write('(');
 			Write("0");
 			Write(op);
-			if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64 || GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
+			if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64) {
 				Write("Long.compareUnsigned(");
 				Write(expr.Left, CiPriority.Argument, expr);
 				Write(", ");
 				Write(expr.Right, CiPriority.Argument, expr);
 				Write(')');
 			}
-			else if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32 || GetTypeCode(expr.Right.Type, false) == TypeCode.UInt32) {
+			else if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32) {
 				Write("Integer.compareUnsigned(");
 				Write(expr.Left, CiPriority.Argument, expr);
 				Write(", ");
@@ -546,8 +546,8 @@ namespace Foxoft.Ci
 
 		private void WriteUnsignedShiftRight(CiBinaryExpr expr, CiPriority parent)
 		{
-			if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32
-			 || GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64) {
+			if (GetTypeCode(expr.Type, false) == TypeCode.UInt32
+			 || GetTypeCode(expr.Type, false) == TypeCode.UInt64) {
 				Write(expr, parent > CiPriority.Shift, CiPriority.Shift, " >>> ", CiPriority.Mul);
 			};
 		}
@@ -843,9 +843,8 @@ namespace Foxoft.Ci
 
 		public override CiExpr Visit(CiBinaryExpr expr, CiPriority parent)
 		{
-			var leftTypeCode = GetTypeCode(expr.Left.Type, false);
-			if (leftTypeCode == TypeCode.UInt32 ||
-				leftTypeCode == TypeCode.UInt64) {
+			var leftType = GetTypeCode(expr.Left.Type, false);
+			if ((leftType == TypeCode.UInt32 || leftType == TypeCode.UInt64) && expr.Right.Type is CiIntegerType) {
 				switch (expr.Op) {
 				case CiToken.Slash:
 					WriteUnsignedDiv(expr);

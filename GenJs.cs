@@ -30,6 +30,7 @@ enum GenJsMethod
 	SortListPart,
 	RegexEscape,
 	Count,
+	UInt32
 }
 
 public class GenJs : GenBase
@@ -644,31 +645,121 @@ public class GenJs : GenBase
 
 	protected override string IsOperator => " instanceof ";
 
+	private CiBinaryExpr WriteIntegerOp(CiBinaryExpr expr, bool parentheses, string op)
+	{
+		if (parentheses)
+			Write('(');
+		expr.Left.Accept(this, CiPriority.Mul);
+		Write(op);
+		expr.Right.Accept(this, CiPriority.Primary);
+		if (GetTypeCode(expr.Right.Type, false) == TypeCode.UInt32 ||
+		    GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
+			Write(" >>> 0"); // FIXME: ulong?
+		} else {
+			Write(" | 0"); // FIXME: long?
+		}
+		if (parentheses)
+			Write(')');
+		return expr;
+	}
+
+	private CiBinaryExpr WriteIntegerCompare(CiBinaryExpr expr, bool parentheses, string op)
+	{
+		if (parentheses)
+			Write('(');
+		expr.Left.Accept(this, CiPriority.Rel);
+		if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32 ||
+		    GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64) {
+			Write(" >>> 0"); // FIXME: ulong?
+		} else {
+			Write(" | 0"); // FIXME: long?
+		}
+		Write(op);
+		expr.Right.Accept(this, CiPriority.Rel);
+		if (GetTypeCode(expr.Right.Type, false) == TypeCode.UInt32 ||
+		    GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
+			Write(" >>> 0"); // FIXME: ulong?
+		} else {
+			Write(" | 0"); // FIXME: long?
+		}
+		if (parentheses)
+			Write(')');
+		return expr;
+	}
+
+	private CiBinaryExpr WriteIntegerShifRight(CiBinaryExpr expr, bool parentheses)
+	{
+		if (parentheses)
+			Write('(');
+		expr.Left.Accept(this, CiPriority.Mul);
+		if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32 ||
+		    GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64) {
+			Write(" >>> "); // FIXME: ulong?
+		} else {
+			Write(" >> "); // FIXME: long?
+		}
+		expr.Right.Accept(this, CiPriority.Mul);
+		if (parentheses)
+			Write(')');
+		return expr;
+	}
+
 	public override CiExpr Visit(CiBinaryExpr expr, CiPriority parent)
 	{
-		if (expr.Type is CiIntegerType) {
+		var leftType = GetTypeCode(expr.Left.Type, false);
+		if (leftType == TypeCode.UInt32 || leftType == TypeCode.UInt64 && expr.Right.Type is CiIntegerType) {
 			switch (expr.Op) {
+			case CiToken.Asterisk:
+				return WriteIntegerOp(expr, parent > CiPriority.Mul, " * ");
 			case CiToken.Slash:
-				if (parent > CiPriority.Or)
-					Write('(');
-				expr.Left.Accept(this, CiPriority.Mul);
-				Write(" / ");
-				expr.Right.Accept(this, CiPriority.Primary);
-				Write(" | 0"); // FIXME: long: Math.trunc?
-				if (parent > CiPriority.Or)
-					Write(')');
-				return expr;
+				return WriteIntegerOp(expr, parent > CiPriority.Mul, " / ");
+			case CiToken.Mod:
+				return WriteIntegerOp(expr, parent > CiPriority.Mul, " % ");
+			case CiToken.ShiftRight:
+				return WriteIntegerShifRight(expr, parent > CiPriority.Shift);
+			case CiToken.Less:
+				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " < ");
+			case CiToken.LessOrEqual:
+				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " <= ");
+			case CiToken.Greater:
+				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " > ");
+			case CiToken.GreaterOrEqual:
+				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " >= ");
 			case CiToken.DivAssign:
 				if (parent > CiPriority.Assign)
 					Write('(');
 				expr.Left.Accept(this, CiPriority.Assign);
 				Write(" = ");
-				expr.Left.Accept(this, CiPriority.Mul); // TODO: side effect
-				Write(" / ");
-				expr.Right.Accept(this, CiPriority.Primary);
-				Write(" | 0");
+				WriteIntegerOp(expr, false, " / ");
 				if (parent > CiPriority.Assign)
-					Write(')');
+					Write('(');
+				return expr;
+			case CiToken.MulAssign:
+				if (parent > CiPriority.Assign)
+					Write('(');
+				expr.Left.Accept(this, CiPriority.Assign);
+				Write(" = ");
+				WriteIntegerOp(expr, false, " * ");
+				if (parent > CiPriority.Assign)
+					Write('(');
+				return expr;
+			case CiToken.ModAssign:
+				if (parent > CiPriority.Assign)
+					Write('(');
+				expr.Left.Accept(this, CiPriority.Assign);
+				Write(" = ");
+				WriteIntegerOp(expr, false, " % ");
+				if (parent > CiPriority.Assign)
+					Write('(');
+				return expr;
+			case CiToken.ShiftRightAssign:
+				if (parent > CiPriority.Assign)
+					Write('(');
+				expr.Left.Accept(this, CiPriority.Assign);
+				Write(" = ");
+				WriteIntegerShifRight(expr, false);
+				if (parent > CiPriority.Assign)
+					Write('(');
 				return expr;
 			default:
 				break;
