@@ -645,43 +645,26 @@ public class GenJs : GenBase
 
 	protected override string IsOperator => " instanceof ";
 
+	private void WriteIntegerCast(CiExpr expr)
+	{
+		Write('(');
+		expr.Accept(this, CiPriority.Shift);
+		if (GetTypeCode(expr.Type, false) == TypeCode.UInt32 ||
+		    GetTypeCode(expr.Type, false) == TypeCode.UInt64) {
+			Write(" >>> 0"); // FIXME: ulong?
+		} else {
+			Write(" | 0"); // FIXME: long?
+		}
+		Write(')');
+	}
+
 	private CiBinaryExpr WriteIntegerOp(CiBinaryExpr expr, bool parentheses, string op)
 	{
 		if (parentheses)
 			Write('(');
-		expr.Left.Accept(this, CiPriority.Mul);
+		WriteIntegerCast(expr.Left);
 		Write(op);
-		expr.Right.Accept(this, CiPriority.Primary);
-		if (GetTypeCode(expr.Right.Type, false) == TypeCode.UInt32 ||
-		    GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
-			Write(" >>> 0"); // FIXME: ulong?
-		} else {
-			Write(" | 0"); // FIXME: long?
-		}
-		if (parentheses)
-			Write(')');
-		return expr;
-	}
-
-	private CiBinaryExpr WriteIntegerCompare(CiBinaryExpr expr, bool parentheses, string op)
-	{
-		if (parentheses)
-			Write('(');
-		expr.Left.Accept(this, CiPriority.Rel);
-		if (GetTypeCode(expr.Left.Type, false) == TypeCode.UInt32 ||
-		    GetTypeCode(expr.Left.Type, false) == TypeCode.UInt64) {
-			Write(" >>> 0"); // FIXME: ulong?
-		} else {
-			Write(" | 0"); // FIXME: long?
-		}
-		Write(op);
-		expr.Right.Accept(this, CiPriority.Rel);
-		if (GetTypeCode(expr.Right.Type, false) == TypeCode.UInt32 ||
-		    GetTypeCode(expr.Right.Type, false) == TypeCode.UInt64) {
-			Write(" >>> 0"); // FIXME: ulong?
-		} else {
-			Write(" | 0"); // FIXME: long?
-		}
+		WriteIntegerCast(expr.Right);
 		if (parentheses)
 			Write(')');
 		return expr;
@@ -718,13 +701,13 @@ public class GenJs : GenBase
 			case CiToken.ShiftRight:
 				return WriteIntegerShifRight(expr, parent > CiPriority.Shift);
 			case CiToken.Less:
-				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " < ");
+				return WriteIntegerOp(expr, parent > CiPriority.Rel, " < ");
 			case CiToken.LessOrEqual:
-				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " <= ");
+				return WriteIntegerOp(expr, parent > CiPriority.Rel, " <= ");
 			case CiToken.Greater:
-				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " > ");
+				return WriteIntegerOp(expr, parent > CiPriority.Rel, " > ");
 			case CiToken.GreaterOrEqual:
-				return WriteIntegerCompare(expr, parent > CiPriority.Rel, " >= ");
+				return WriteIntegerOp(expr, parent > CiPriority.Rel, " >= ");
 			case CiToken.DivAssign:
 				if (parent > CiPriority.Assign)
 					Write('(');
